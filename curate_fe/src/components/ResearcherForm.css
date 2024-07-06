@@ -44,3 +44,7 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+
+.loading-text {
+    color: #0056b3; /* Dark blue color */
+}

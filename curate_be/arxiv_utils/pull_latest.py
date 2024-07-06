@@ -24,7 +24,7 @@ pc = Pinecone(api_key=pinecone_api_key)
 index_name = "curate-iq"
 index = pc.Index(index_name)
 
-def fetch_latest_papers(category, max_results=100):
+def fetch_latest_papers(category, max_results=300):
     """
     Fetch the latest papers from arXiv for a given category.
 
@@ -80,7 +80,7 @@ def upsert_papers_to_pinecone(papers: List[Dict]):
     vectors = []
     for paper in papers:
         # pprint.pprint(paper)
-        embedding = get_embeddings(paper['summary'])
+        embedding = get_embeddings(paper['title'])
         vector = {
             "id": paper['id'],
             "values": embedding,
@@ -97,7 +97,7 @@ def upsert_papers_to_pinecone(papers: List[Dict]):
     if vectors:
         index.upsert(vectors=vectors)
 
-def pull_and_upsert_latest_papers(category, max_results=100):
+def pull_and_upsert_latest_papers(category, max_results=300):
     """
     Pull the latest papers from arXiv and upsert them into Pinecone.
 

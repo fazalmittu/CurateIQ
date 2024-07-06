@@ -31,10 +31,9 @@ const arxivCategories = [
 const ResearcherForm = () => {
     const [formData, setFormData] = useState({
         fullName: '',
-        subjectArea: '',
-        keywords: '',
-        email: ''
+        subjectArea: ''
     });
+    const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
 
@@ -51,29 +50,36 @@ const ResearcherForm = () => {
             alert('Invalid subject area. Please select a valid arXiv subject area.');
             return;
         }
+        setLoading(true);
         try {
-            const response = await axios.post('http://127.0.0.1:5000/api/researcher', formData, {
+            await axios.post('http://127.0.0.1:5000/api/researcher', formData, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
-            navigate('/feed', { state: { authorName: formData.fullName, subjectArea: formData.subjectArea } });
+            navigate('/author_papers', { state: { authorName: formData.fullName, subjectArea: formData.subjectArea } });
         } catch (error) {
             console.error('Error submitting data', error);
             alert('Error submitting data: ' + error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div className="form-container">
-            <h2 className="sub-header">Researcher Information</h2>
-            <form onSubmit={handleSubmit}>
-                <input type="text" name="fullName" placeholder="Full Name" onChange={handleChange} required />
-                <input type="text" name="subjectArea" placeholder="Subject Area" onChange={handleChange} required />
-                <input type="text" name="keywords" placeholder="Keywords" onChange={handleChange} required />
-                <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
-                <button type="submit">Submit</button>
-            </form>
+            {loading ? (
+                <h2 className="loading-text">Loading your papers...</h2>
+            ) : (
+                <>
+                    <h2 className="loading-text">Enter Researcher Details</h2>
+                    <form onSubmit={handleSubmit}>
+                        <input type="text" name="fullName" placeholder="Full Name" onChange={handleChange} required />
+                        <input type="text" name="subjectArea" placeholder="Subject Area" onChange={handleChange} required />
+                        <button type="submit">Submit</button>
+                    </form>
+                </>
+            )}
         </div>
     );
 };

@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from flask_cors import CORS
 from curate_be.arxiv_utils.pull_latest import fetch_latest_papers
-from curate_be.arxiv_utils.pull_author_info import fetch_and_find_similar_papers
+from curate_be.arxiv_utils.pull_author_info import fetch_and_compare_selected_papers, fetch_papers_by_author, hybrid_search_author_comparison
 
 load_dotenv()
 
@@ -29,7 +29,7 @@ def add_researcher():
     response = supabase.table('users').insert({
         'full_name': data['fullName'],
         'subject_areas': data['subjectArea'],
-        'email': data['email']
+        # 'email': data['email']
     }).execute()
     
     return jsonify(response.data), 200
@@ -37,15 +37,33 @@ def add_researcher():
 @app.route('/api/arxiv', methods=['GET'])
 def get_arxiv_papers():
     subject_area = request.args.get('subjectArea')
-    papers = fetch_latest_papers(subject_area, max_results=10)
+    papers = fetch_latest_papers(subject_area, max_results=300)
     return jsonify(papers), 200
 
+@app.route('/api/author_papers', methods=['GET'])
+def get_author_papers():
+    author_name = request.args.get('authorName')
+    print(f"Received request for author: {author_name}")  # Debug log
+    papers = fetch_papers_by_author(author_name)
+    print(f"Found {len(papers)} papers")  # Debug log
+    return jsonify(papers), 200
+
+# @app.route('/api/similar_papers', methods=['GET'])
+# def get_similar_papers():
+#     author_name = request.args.get('authorName')
+#     category = request.args.get('category')
+#     selected_paper_ids = request.args.get('selectedPaperIds', '').split(',')
+#     # papers = fetch_and_compare_selected_papers(selected_paper_ids, author_name, category)
+#     papers = hybrid_search_author_comparison(selected_paper_ids, author_name, category)
+#     return jsonify(papers), 200
 @app.route('/api/similar_papers', methods=['GET'])
 def get_similar_papers():
     author_name = request.args.get('authorName')
     category = request.args.get('category')
-    papers = fetch_and_find_similar_papers(author_name, category)
-    return jsonify(papers), 200
+    selected_paper_ids = request.args.get('selectedPaperIds').split(',')
+
+    result = hybrid_search_author_comparison(selected_paper_ids, author_name, category)
+    return jsonify(result), 200
 
 def build_cors_preflight_response():
     response = jsonify()

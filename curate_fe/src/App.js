@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import ResearcherForm from './components/ResearcherForm';
 import Feed from './components/Feed';
+import AuthorPapers from './components/AuthorPapers';
 import { FaSearch } from 'react-icons/fa';
 import './App.css';
 
@@ -15,6 +16,7 @@ function App() {
                 </h1>
                 <Routes>
                     <Route path="/" element={<ResearcherForm />} />
+                    <Route path="/author_papers" element={<AuthorPapers />} />
                     <Route path="/feed" element={<Feed />} />
                 </Routes>
             </div>

@@ -120,7 +120,7 @@ const AuthorPapers = () => {
                             <label>
                                 <input
                                     type="checkbox"
-                                    checked={selectedPapers.includes(paper.id) || selectAll}
+                                    checked={selectedPapers.includes(paper.id)}
                                     onChange={() => handleCheckboxChange(paper.id)}
                                 />
                             </label>

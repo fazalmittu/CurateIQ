@@ -75,7 +75,7 @@ const ResearcherForm = () => {
                     <h2 className="loading-text">Enter Researcher Details</h2>
                     <form onSubmit={handleSubmit}>
                         <input type="text" name="fullName" placeholder="Full Name" onChange={handleChange} required />
-                        <input type="text" name="subjectArea" placeholder="Subject Area" onChange={handleChange} required />
+                        <input type="text" name="subjectArea" placeholder="Subject Area (cs.CL, cs.AI, ...)" onChange={handleChange} required />
                         <button type="submit">Submit</button>
                     </form>
                 </>

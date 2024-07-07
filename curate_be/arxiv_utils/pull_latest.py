@@ -70,16 +70,16 @@ def get_embeddings(text):
     )
     return response.data[0].embedding
 
-def upsert_papers_to_pinecone(papers: List[Dict]):
+def upsert_papers_to_pinecone(papers: List[Dict], namespace: str):
     """
     Upsert a list of papers into the Pinecone vector database.
 
     Args:
     papers (list): A list of dictionaries containing paper information.
+    namespace (str): The namespace to insert the vectors into.
     """
     vectors = []
     for paper in papers:
-        # pprint.pprint(paper)
         embedding = get_embeddings(paper['title'])
         vector = {
             "id": paper['id'],
@@ -95,7 +95,7 @@ def upsert_papers_to_pinecone(papers: List[Dict]):
         vectors.append(vector)
 
     if vectors:
-        index.upsert(vectors=vectors)
+        index.upsert(vectors=vectors, namespace=namespace)
 
 def pull_and_upsert_latest_papers(category, max_results=300):
     """
@@ -108,14 +108,11 @@ def pull_and_upsert_latest_papers(category, max_results=300):
     papers = fetch_latest_papers(category, max_results)
     
     ids = [paper['id'] for paper in papers]
-    stored_ids = get_all_ids_from_index(index, 1536)
+    stored_ids = get_all_ids_from_index(index, 1536, namespace=category)
     
     new_papers = [id for id in ids if id not in stored_ids]
     papers_to_upsert = [paper for paper in papers if paper['id'] in new_papers]
-    # remove summaries from papers_to_upsert
-    # for paper in papers_to_upsert:
-    #     del paper['summary']
-    upsert_papers_to_pinecone(papers_to_upsert)
+    upsert_papers_to_pinecone(papers_to_upsert, namespace=category)
     print(f"Upserted {len(papers_to_upsert)} new papers from category {category} to Pinecone.")
 
 if __name__ == "__main__":

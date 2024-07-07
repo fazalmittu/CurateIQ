@@ -51,11 +51,35 @@ def get_all_ids_from_index(index, num_dimensions, namespace=""):
         return all_titles
     except Exception as e:
         return set()
+    
+def delete_all_records_from_index(index):
+    num_vectors = index.describe_index_stats()
+    try:
+        namespace = ""
+        num_vectors = num_vectors.namespaces[namespace].vector_count
+        all_ids = set()
+        while len(all_ids) < num_vectors:
+            print("Length of ids list is shorter than the number of total vectors...")
+            input_vector = np.random.rand(1536).tolist()
+            print("creating random vector...")
+            ids = get_ids_from_query(index, input_vector)
+            print("getting ids from a vector query...")
+            all_ids.update(ids)
+            print("updating ids set...")
+            print(f"Collected {len(all_ids)} ids out of {num_vectors}.")
+        
+        # Delete all IDs from the index
+        print(f"Deleting {len(all_ids)} records from the index...")
+        index.delete(ids=list(all_ids))
+        print("All records deleted.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     index_name = "curate-iq"
     index = pc.Index(index_name)
-    all_titles = get_all_ids_from_index(index, 1536)
-    print(list(all_titles))
+    # all_titles = get_all_ids_from_index(index, 1536)
+    # print(list(all_titles))
+    delete_all_records_from_index(index)
 
     # python3 -m curate_be.arxiv_utils.utils

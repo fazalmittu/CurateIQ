@@ -1,4 +1,4 @@
-from pinecone import Pinecone, ServerlessSpec
+from pinecone import Pinecone, ServerlessSpec, Index
 import numpy as np
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -18,15 +18,16 @@ openai_client = OpenAI(api_key=openai_api_key)
 pc = Pinecone(api_key=pinecone_api_key)
 
 index_name = "curate-iq"
-index = pc.Index(index_name)
+index: Index = pc.Index(index_name)
 
-def get_ids_from_query(index,input_vector):
+def get_ids_from_query(index: Index, input_vector, namespace: str):
     print("searching pinecone...")
     results = index.query(
         top_k=10000,
         include_values=False,
         include_metadata=True,
         vector=input_vector,
+        namespace=namespace
     )
     ids = set()
     for result in results['matches']:

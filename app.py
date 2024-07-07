@@ -16,15 +16,24 @@ key = os.environ.get("SUPABASE_KEY")
 
 supabase = create_client(url, key)
 
-@app.route('/')
-@cross_origin()
-def index():
-    return 'Welcome to the Research Feed API'
+# @app.route('/')
+# @cross_origin()
+# def index():
+#     return 'Welcome to the Research Feed API'
 
-@app.route('/')
+# @app.route('/')
+# @cross_origin()
+# def serve_react_app():
+#     return send_from_directory(app.static_folder, 'index.html')
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
 @cross_origin()
-def serve_react_app():
-    return send_from_directory(app.static_folder, 'index.html')
+def serve_react_app(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
+
 
 @app.route('/api/researcher', methods=['POST', 'OPTIONS'])
 def add_researcher():
@@ -85,3 +94,4 @@ def corsify_actual_response(response):
 
 if __name__ == '__main__':
     app.run(debug=True)
+

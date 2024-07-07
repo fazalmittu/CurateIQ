@@ -423,9 +423,9 @@ def hybrid_search_author_comparison(selected_paper_ids, author_name, category):
         query = paper['title']
         if keywords:
             print("KW SEARCH")
-            search_results = combined_search(index, query, all_papers, keywords, weight_bm25=0.4, weight_embedding=0, weight_tfidf=0.5, weight_keyword=0.05, top_k=50)
+            search_results = combined_search(index, category, query, all_papers, keywords, weight_bm25=0.4, weight_embedding=0, weight_tfidf=0.5, weight_keyword=0.05, top_k=50)
         else:
-            search_results = combined_search(index, query, all_papers, weight_bm25=0., weight_embedding=0.2, weight_tfidf=0.2, top_k=50)
+            search_results = combined_search(index, category, query, all_papers, weight_bm25=0., weight_embedding=0.2, weight_tfidf=0.2, top_k=50)
         combined_results.extend(search_results)
         print(f"Results for query '{query}':", search_results)
 

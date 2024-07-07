@@ -173,7 +173,7 @@ def keyword_matching_score(papers, keywords):
 #     print("COMBINED RESULTS: ", combined_results)
 #     return combined_results[:top_k]
 
-def combined_search(index, query, papers, keywords=None, weight_bm25=0.2, weight_embedding=0.3, weight_tfidf=0.4, weight_keyword=0.1, top_k=20):
+def combined_search(index, category, query, papers, keywords=None, weight_bm25=0.2, weight_embedding=0.3, weight_tfidf=0.4, weight_keyword=0.1, top_k=20):
     query_embedding = get_embeddings(query)
     bm25_scores = bm25_search(papers, query)
     tfidf_results = tfidf_search(papers, query, top_k)
@@ -186,7 +186,8 @@ def combined_search(index, query, papers, keywords=None, weight_bm25=0.2, weight
     pinecone_results = index.query(
         vector=query_embedding,
         top_k=top_k,
-        include_metadata=True
+        include_metadata=True,
+        namespace=category
     )
 
     print("PINECONE RESULTS: ", pinecone_results)

@@ -29,6 +29,7 @@ def get_ids_from_query(index: Index, input_vector, namespace: str):
         vector=input_vector,
         namespace=namespace
     )
+    print('FINISHED QUERYING PINECONE')
     ids = set()
     for result in results['matches']:
         ids.add(result.id)
@@ -43,7 +44,7 @@ def get_all_ids_from_index(index: Index, num_dimensions, namespace=""):
             print("Length of ids list is shorter than the number of total vectors...")
             input_vector = np.random.rand(num_dimensions).tolist()
             print("creating random vector...")
-            titles = get_ids_from_query(index, input_vector)
+            titles = get_ids_from_query(index, input_vector, namespace)
             print("getting titles from a vector query...")
             all_titles.update(titles)
             print("updating titles set...")

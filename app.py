@@ -1,14 +1,14 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from supabase import create_client
 import os
 from dotenv import load_dotenv
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from curate_be.arxiv_utils.pull_latest import fetch_latest_papers
 from curate_be.arxiv_utils.pull_author_info import fetch_and_compare_selected_papers, fetch_papers_by_author, hybrid_search_author_comparison
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='curate_fe/build', static_url_path='')
 CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 url = os.environ.get("SUPABASE_URL")
@@ -17,8 +17,14 @@ key = os.environ.get("SUPABASE_KEY")
 supabase = create_client(url, key)
 
 @app.route('/')
+@cross_origin()
 def index():
     return 'Welcome to the Research Feed API'
+
+@app.route('/')
+@cross_origin()
+def serve_react_app():
+    return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/api/researcher', methods=['POST', 'OPTIONS'])
 def add_researcher():
@@ -63,7 +69,7 @@ def get_similar_papers():
     selected_paper_ids = request.args.get('selectedPaperIds').split(',')
 
     result = hybrid_search_author_comparison(selected_paper_ids, author_name, category)
-    
+
     return jsonify(result), 200
 
 def build_cors_preflight_response():

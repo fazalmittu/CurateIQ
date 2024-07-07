@@ -5,7 +5,8 @@ import { FaFilePdf, FaInfoCircle } from 'react-icons/fa';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Sector } from 'recharts';
 import Modal from 'react-modal';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+// const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+const COLORS = ['#051e47', '#2e4161', '#2e70db', '#97accf'];
 
 Modal.setAppElement('#root'); // Add this line
 
@@ -148,10 +149,14 @@ const Feed = () => {
 };
 
 const data = [
-    { name: 'BM25', value: 35, fill: '#FF8042' },
-    { name: 'TF-IDF', value: 40, fill: '#FFBB28' },
-    { name: 'Keyword', value: 10, fill: '#00C49F' },
-    { name: 'Embedding', value: 15, fill: '#0088FE' },
+    // { name: 'BM25', value: 35, fill: '#FF8042' },
+    // { name: 'TF-IDF', value: 40, fill: '#FFBB28' },
+    // { name: 'Keyword', value: 10, fill: '#00C49F' },
+    // { name: 'Embedding', value: 15, fill: '#0088FE' },
+    { name: 'BM25', value: 35, fill: '#97accf' },
+    { name: 'TF-IDF', value: 40, fill: '#2e70db' },
+    { name: 'Keyword', value: 10, fill: '#2e4161' },
+    { name: 'Embedding', value: 15, fill: '#051e47' },
 ];
 
 const renderActiveShape = (props) => {
@@ -194,7 +199,7 @@ const renderActiveShape = (props) => {
             <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
             <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} textAnchor={textAnchor} fill="#333">{payload.name}</text>
             <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} dy={18} textAnchor={textAnchor} fill="#999">
-                {`(Rate ${(percent * 100).toFixed(2)}%)`}
+                {`(${(percent * 100).toFixed(2)}%)`}
             </text>
         </g>
     );
@@ -221,8 +226,8 @@ class RankingAlgorithmChart extends PureComponent {
                         data={data}
                         cx="50%"
                         cy="50%"
-                        innerRadius={100}
-                        outerRadius={140}
+                        innerRadius={70}
+                        outerRadius={100}
                         onMouseEnter={this.onPieEnter}
                         dataKey="value"
                     />

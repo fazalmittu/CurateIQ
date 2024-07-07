@@ -17,7 +17,7 @@ const AuthorPapers = () => {
         const fetchPapers = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`http://127.0.0.1:5000/api/author_papers?authorName=${authorName}`);
+                const response = await axios.get(`https://sheltered-shore-45178-a9d722462cf3.herokuapp.com/api/author_papers?authorName=${authorName}`);
                 setPapers(response.data);
             } catch (error) {
                 console.error('Error fetching papers', error);
@@ -60,7 +60,7 @@ const AuthorPapers = () => {
     const handleSubmit = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://127.0.0.1:5000/api/similar_papers', {
+            const response = await axios.get('https://sheltered-shore-45178-a9d722462cf3.herokuapp.com/api/similar_papers', {
                 params: {
                     authorName,
                     category: subjectArea,

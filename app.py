@@ -63,6 +63,7 @@ def get_similar_papers():
     selected_paper_ids = request.args.get('selectedPaperIds').split(',')
 
     result = hybrid_search_author_comparison(selected_paper_ids, author_name, category)
+    
     return jsonify(result), 200
 
 def build_cors_preflight_response():

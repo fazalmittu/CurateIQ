@@ -8,6 +8,7 @@ from rank_bm25 import BM25Okapi
 from curate_be.arxiv_utils.pull_latest import get_embeddings
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
+from arxiv2text import arxiv_to_text
 
 load_dotenv()
 
@@ -38,20 +39,22 @@ KW_SYSTEM_MSG = """
 You are a research assistant and your job is to look at a list of papers and generate a list of keywords for them.
 These keywords will be used to look for papers that are similar to the ones you have.
 
-Only generate 5 keywords and make sure they are specific and terms that can possibly be found in other papers you encounter later.
-For example you wouldn't want to generate keywords like "model" or "method" or "approach". These are too general.
+Only generate 200 keywords and make sure they are specific and terms that can possibly be found in other papers you encounter later.
+For example you wouldn't want to generate keywords like "large language model" or "method" or "model". These are too general.
 You also wouldn't want to generate keywords that are very specific like names of novel techniques a paper invented.
 Rather, you want to generate keywords that are more like concepts or ideas that are discussed in the papers.
 
-Each string should be max 2 words.
+Also try not to include suffixes like 'ed' or 'ing'. We want the most general form of the keyword. 
+
+Each string should be max 2 words. AT LEAST 100 OF THEM SHOULD BE SINGLE WORDS ONLY (NOT PHRASES).
 
 YOUR RESPONSE SHOULD BE JSON IN THE FOLLOWING FORMAT: 
 {
-    "keywords": ['keyword_1', 'keyword_2', 'keyword_3', 'keyword_4', 'keyword_5']
+    "keywords": ['keyword_1', 'keyword_2', 'keyword_3', 'keyword_4', 'keyword_5'... 'keyword_50']
 }
 
 MAKE SURE YOUR RESPONSE IS JSON ONLY WITH NO OTHER TEXT. I WILL BE DIRECTLY PARSING YOUR RESPONSE AS JSON.
-DO NOT WRAP YOUR JSON IN ```json``` or any other text please.
+DO NOT WRAP YOUR JSON IN ```json``` or any other text please. AT LEAST 100 OF THEM SHOULD BE SINGLE WORDS ONLY (NOT PHRASES).
 """
 
 def rank_papers(author_paper_ids, papers):
@@ -81,7 +84,7 @@ def rank_papers(author_paper_ids, papers):
             {"role": "system", "content": RANK_SYSTEM_MSG},
             {"role": "user", "content": author_str + "\nMAKE SURE YOUR RESPONSE IS JSON ONLY WITH NO OTHER TEXT. I WILL BE DIRECTLY PARSING YOUR RESPONSE AS JSON."}
         ],
-        max_tokens=1000,
+        max_tokens=2000,
         response_format={"type": "json_object"}
     )
 
@@ -90,6 +93,7 @@ def rank_papers(author_paper_ids, papers):
     return json.loads(response.choices[0].message.content)["ranking"]
 
 def bm25_search(papers, query):
+    # tokenized_corpus = [arxiv_to_text(paper['pdf_url']) for paper in papers]
     tokenized_corpus = [paper['summary'].split() for paper in papers]
     bm25 = BM25Okapi(tokenized_corpus)
     tokenized_query = query.split()
@@ -98,6 +102,7 @@ def bm25_search(papers, query):
 
 def tfidf_search(papers, query, top_k=10):
     # Prepare the corpus and vectorizer
+    # corpus = [arxiv_to_text(paper['pdf_url']) for paper in papers]
     corpus = [paper['summary'] for paper in papers]
     vectorizer = TfidfVectorizer().fit(corpus)
     
@@ -124,6 +129,11 @@ def keyword_matching_score(papers, keywords):
         summary = paper['summary'].lower()
         score = sum(summary.count(keyword) for keyword in keywords)
         keyword_scores.append(score)
+        # pdf_url = paper['pdf_url']
+        # if pdf_url:
+        #     pdf_text = arxiv_to_text(pdf_url)
+        #     score = sum(pdf_text.count(keyword) for keyword in keywords)
+        #     keyword_scores.append(score)
 
     return keyword_scores
 
@@ -163,45 +173,7 @@ def keyword_matching_score(papers, keywords):
 #     print("COMBINED RESULTS: ", combined_results)
 #     return combined_results[:top_k]
 
-def combined_search(index, query, papers, weight_bm25=0.3, weight_embedding=0.3, weight_tfidf=0.4, top_k=10):
-    query_embedding = get_embeddings(query)
-    bm25_scores = bm25_search(papers, query)
-    tfidf_results = tfidf_search(papers, query, top_k)
-    print("BM25 SCORES: ", bm25_scores)
-    print("TF-IDF RESULTS: ", tfidf_results)
-
-    pinecone_results = index.query(
-        vector=query_embedding,
-        top_k=top_k,
-        include_metadata=True
-    )
-
-    print("PINECONE RESULTS: ", pinecone_results)
-
-    paper_ids = [paper['id'] for paper in papers]
-    combined_results = []
-
-    for result in pinecone_results['matches']:
-        paper_id = result['id']
-        if paper_id in paper_ids:
-            matching_paper = papers[paper_ids.index(paper_id)]
-            bm25_score = bm25_scores[paper_ids.index(paper_id)]
-            tfidf_score = next((item['score'] for item in tfidf_results if item['id'] == paper_id), 0)
-            embedding_score = result['score']
-            combined_score = (weight_bm25 * bm25_score + weight_embedding * embedding_score + weight_tfidf * tfidf_score)
-            combined_results.append({
-                'id': paper_id,
-                'combined_score': combined_score,
-                'metadata': result['metadata']
-            })
-        else:
-            print(f"No matching paper found for paper_id: {paper_id}")
-
-    combined_results.sort(key=lambda x: x['combined_score'], reverse=True)
-    print("COMBINED RESULTS: ", combined_results)
-    return combined_results[:top_k]
-
-def combined_search(index, query, papers, keywords=None, weight_bm25=0.2, weight_embedding=0.2, weight_tfidf=0.2, weight_keyword=0.2, top_k=20):
+def combined_search(index, query, papers, keywords=None, weight_bm25=0.2, weight_embedding=0.3, weight_tfidf=0.4, weight_keyword=0.1, top_k=20):
     query_embedding = get_embeddings(query)
     bm25_scores = bm25_search(papers, query)
     tfidf_results = tfidf_search(papers, query, top_k)
@@ -209,7 +181,7 @@ def combined_search(index, query, papers, keywords=None, weight_bm25=0.2, weight
         keyword_scores = keyword_matching_score(papers, keywords)
     print("BM25 SCORES: ", bm25_scores)
     print("TF-IDF RESULTS: ", tfidf_results)
-    print("KEYWORD SCORES: ", keyword_scores)
+    # print("KEYWORD SCORES: ", keyword_scores)
 
     pinecone_results = index.query(
         vector=query_embedding,
@@ -229,7 +201,7 @@ def combined_search(index, query, papers, keywords=None, weight_bm25=0.2, weight
             bm25_score = bm25_scores[paper_ids.index(paper_id)]
             if keywords:
                 keyword_score = keyword_scores[paper_ids.index(paper_id)]
-            tfidf_score = next((item['score'] for item in tfidf_results if item['id'] == paper_id), 0)
+            tfidf_score = next((item['score'] * 100 for item in tfidf_results if item['id'] == paper_id), 0)
             embedding_score = result['score']
             if keywords:
                 combined_score = (weight_bm25 * bm25_score + weight_embedding * embedding_score + 
@@ -240,6 +212,10 @@ def combined_search(index, query, papers, keywords=None, weight_bm25=0.2, weight
             combined_results.append({
                 'id': paper_id,
                 'combined_score': combined_score,
+                'bm25_score': bm25_score * weight_bm25,
+                'tfidf_score': tfidf_score * weight_tfidf,
+                'keyword_score': keyword_score * 0.25 if keywords else 0,
+                'embedding_score': 0.15,
                 'metadata': result['metadata']
             })
         else:
@@ -251,11 +227,15 @@ def combined_search(index, query, papers, keywords=None, weight_bm25=0.2, weight
 
 def generate_kw(papers):
     # given some papers, show them to GPT and get a list of keywords
-    author_str = "PLEASE GENERATE 5 KEYWORDS. MAKE YOUR RESPONSE IN JSON PLEASE. HERE ARE THE PAPERS THAT YOU HAVE TO GENERATE KEYWORDS FOR:\n"
+    author_str = "Here are the papers that you have to generate keywords for:\n"
 
     # give title and abstract of each paper
     for paper in papers:
-        author_str += f"\n\nPaper ID: {paper['id']}\n{paper['title']}\n{paper['summary']}"
+        author_str += f"\n\nPaper ID: {paper['id']}\n{paper['title']}\n{arxiv_to_text(paper['pdf_url'])}"
+
+    author_str += "\n\n--------------------\n\n"
+    author_str += "Please generate 200 keywords. Make your response in JSON please. Do not use overly general keywords please like 'large language model' or 'method' or 'model'."
+    author_str += "Make sure the keywords are MAX 2 WORDS. AT LEAST 100 OF THEM SHOULD BE SINGLE WORDS ONLY (NOT PHRASES)."
 
     response = client.chat.completions.create(
         model="gpt-4o",
@@ -268,6 +248,25 @@ def generate_kw(papers):
     )
 
     return json.loads(response.choices[0].message.content)["keywords"]
+
+def extract_keywords(papers, top_n=10):
+
+    # use full paper text
+    text = " ".join([arxiv_to_text(paper['pdf_url']) for paper in papers])
+
+    # Create a TF-IDF Vectorizer
+    vectorizer = TfidfVectorizer(stop_words='english', max_features=top_n)
+    # Fit and transform the text
+    tfidf_matrix = vectorizer.fit_transform([text])
+    # Get feature names (words)
+    feature_names = vectorizer.get_feature_names_out()
+    # Get the tf-idf scores
+    tfidf_scores = tfidf_matrix.toarray().flatten()
+    # Create a dictionary of words and their tf-idf scores
+    keyword_scores = dict(zip(feature_names, tfidf_scores))
+    # Sort the keywords based on their scores
+    sorted_keywords = sorted(keyword_scores.items(), key=lambda x: x[1], reverse=True)
+    return sorted_keywords
 
 if __name__ == "__main__":
     pass

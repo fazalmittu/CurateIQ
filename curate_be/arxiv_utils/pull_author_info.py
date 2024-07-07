@@ -2,7 +2,7 @@ import arxiv
 from curate_be.arxiv_utils.pull_latest import get_embeddings, index, fetch_latest_papers, pull_and_upsert_latest_papers
 import pprint
 
-from curate_be.arxiv_utils.rank import combined_search, generate_kw, rank_papers
+from curate_be.arxiv_utils.rank import combined_search, extract_keywords, generate_kw, rank_papers
 
 def fetch_papers_by_author(author_name):
     """
@@ -410,7 +410,8 @@ def hybrid_search_author_comparison(selected_paper_ids, author_name, category):
             selected_papers.append(paper_info)
 
     try:
-        keywords = generate_kw(selected_papers)
+        # keywords = generate_kw(selected_papers)
+        keywords = [keyword[0] for keyword in extract_keywords(selected_papers)]
         print("KEYWORDS: ", keywords)
     except Exception as e:
         print("ERROR GENERATING KEYWORDS: ", e)
@@ -422,9 +423,9 @@ def hybrid_search_author_comparison(selected_paper_ids, author_name, category):
         query = paper['title']
         if keywords:
             print("KW SEARCH")
-            search_results = combined_search(index, query, all_papers, keywords, weight_bm25=0.1, weight_embedding=0, weight_tfidf=0.5, weight_keyword=0.4, top_k=40)
+            search_results = combined_search(index, query, all_papers, keywords, weight_bm25=0.4, weight_embedding=0, weight_tfidf=0.5, weight_keyword=0.05, top_k=50)
         else:
-            search_results = combined_search(index, query, all_papers, weight_bm25=0., weight_embedding=0.2, weight_tfidf=0.2, top_k=30)
+            search_results = combined_search(index, query, all_papers, weight_bm25=0., weight_embedding=0.2, weight_tfidf=0.2, top_k=50)
         combined_results.extend(search_results)
         print(f"Results for query '{query}':", search_results)
 
@@ -444,7 +445,7 @@ def hybrid_search_author_comparison(selected_paper_ids, author_name, category):
     # Rank papers based on frequency and score
     ranked_papers = sorted(result_count.keys(), key=lambda id: (result_count[id], result_scores[id]), reverse=True)
 
-    unique_papers = [next(result['metadata'] for result in combined_results if result['id'] == paper_id) for paper_id in ranked_papers]
+    unique_papers = [next(result for result in combined_results if result['id'] == paper_id) for paper_id in ranked_papers]
 
     return {
         'papers': unique_papers,

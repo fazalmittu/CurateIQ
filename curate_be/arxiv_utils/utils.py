@@ -1,4 +1,4 @@
-from pinecone import Pinecone, ServerlessSpec, Index
+from pinecone import Pinecone, ServerlessSpec, Index, DescribeIndexStatsResponse
 import numpy as np
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -34,8 +34,8 @@ def get_ids_from_query(index: Index, input_vector, namespace: str):
         ids.add(result.id)
     return ids
 
-def get_all_ids_from_index(index, num_dimensions, namespace=""):
-    num_vectors = index.describe_index_stats()
+def get_all_ids_from_index(index: Index, num_dimensions, namespace=""):
+    num_vectors: DescribeIndexStatsResponse = index.describe_index_stats()
     try:
         num_vectors = num_vectors.namespaces[namespace].vector_count
         all_titles = set()

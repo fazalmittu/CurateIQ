@@ -127,9 +127,11 @@ const AuthorPapers = () => {
                         <div className="paper-actions">
                             <label>
                                 <input
+                                    key={paper.id}
                                     type="checkbox"
-                                    checked={selectedPapers.includes(paper.id)}
+                                    defaultChecked={selectedPapers.includes(paper.id)}
                                     onChange={() => handleCheckboxChange(paper.id)}
+                                    style={{ cursor: 'pointer' }}
                                 />
                             </label>
                         </div>

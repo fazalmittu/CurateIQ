@@ -389,7 +389,7 @@ def hybrid_search_author_comparison(selected_paper_ids, author_name, category):
     Returns:
     dict: A dictionary containing a list of similar papers sorted by relevance and the generated keywords.
     """
-    pull_and_upsert_latest_papers(category, max_results=300)
+    # pull_and_upsert_latest_papers(category, max_results=300)
 
     if len(selected_paper_ids) == 0:
         author_papers = fetch_papers_by_author(author_name)

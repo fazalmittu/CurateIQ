@@ -52,7 +52,12 @@ const ResearcherForm = () => {
         }
         setLoading(true);
         try {
-            await axios.post('https://sheltered-shore-45178-a9d722462cf3.herokuapp.com/api/researcher', formData, {
+            // await axios.post('https://sheltered-shore-45178-a9d722462cf3.herokuapp.com/api/researcher', formData, {
+            //     headers: {
+            //         'Content-Type': 'application/json'
+            //     }
+            // });
+            await axios.post('http://127.0.0.1:5000/api/researcher', formData, {
                 headers: {
                     'Content-Type': 'application/json'
                 }

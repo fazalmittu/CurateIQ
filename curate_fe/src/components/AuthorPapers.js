@@ -125,9 +125,9 @@ const AuthorPapers = () => {
                             <p><strong>Authors:</strong> {Array.isArray(paper.authors) ? paper.authors.join(', ') : paper.authors}</p>
                         </div>
                         <div className="paper-actions">
-                            <label>
+                            <label htmlFor={`checkbox-${paper.id}`} style={{ cursor: 'pointer' }}>
                                 <input
-                                    key={paper.id}
+                                    id={`checkbox-${paper.id}`}
                                     type="checkbox"
                                     checked={selectedPapers.includes(paper.id)}
                                     onChange={() => handleCheckboxChange(paper.id)}

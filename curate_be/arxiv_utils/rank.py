@@ -267,6 +267,11 @@ def extract_keywords(papers, top_n=10):
     keyword_scores = dict(zip(feature_names, tfidf_scores))
     # Sort the keywords based on their scores
     sorted_keywords = sorted(keyword_scores.items(), key=lambda x: x[1], reverse=True)
+    # print("removing")
+    # # remove certain words
+    # sorted_keywords = [keyword for keyword in sorted_keywords if keyword[0] not in ["the", "and", "in", "to", "with", "a", "of", "is", "on", "by", "for", "at", "by", "from", "it", "that", "this", "we", "an", "are", "as", "by", "for", "in", "of", "on", "the", "to", "with", "et", "al", "model", "large language model", "LLM", "science", "paper"]]
+    # print("removed")
+    sorted_keywords = [keyword for keyword in sorted_keywords if keyword[0] not in ["et", "al"]]
     return sorted_keywords
 
 if __name__ == "__main__":

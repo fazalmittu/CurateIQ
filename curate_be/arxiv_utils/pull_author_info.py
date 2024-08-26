@@ -3,6 +3,7 @@ from curate_be.arxiv_utils.pull_latest import get_embeddings, index, fetch_lates
 import pprint
 
 from curate_be.arxiv_utils.rank import combined_search, extract_keywords, generate_kw, rank_papers
+from curate_be.sync_papers.add_and_delete import update_namespace
 
 def fetch_papers_by_author(author_name):
     """
@@ -418,7 +419,8 @@ def hybrid_search_author_comparison(selected_paper_ids, author_name, category):
         keywords = []
 
     combined_results = []
-    all_papers = fetch_latest_papers(category, max_results=300)
+    update_namespace(index, category)
+    all_papers = fetch_latest_papers(category, max_results=50)
     for paper in selected_papers:
         query = paper['title']
         if keywords:

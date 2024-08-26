@@ -61,7 +61,7 @@ def update_namespace(index, category):
     delete_all_records_from_namespace(index, category)
     
     # Fetch latest papers for the category
-    papers = fetch_latest_papers(category, max_results=300)
+    papers = fetch_latest_papers(category, max_results=50)
     
     # Upsert new papers to Pinecone
     upsert_papers_to_pinecone(papers, namespace=category)
@@ -73,6 +73,7 @@ def update_all_namespaces(index):
         update_namespace(index, category)
 
 if __name__ == "__main__":
-    update_all_namespaces(index)
+    # update_all_namespaces(index)
+    update_namespace(index, "cs.CL")
 
     # python3 -m curate_be.sync_papers.add_and_delete

@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory
-from supabase import create_client
+# from supabase import create_client
 import os
 from dotenv import load_dotenv
 from flask_cors import CORS, cross_origin
@@ -11,11 +11,11 @@ load_dotenv()
 app = Flask(__name__, static_folder='curate_fe/build', static_url_path='')
 CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
-url = os.environ.get("SUPABASE_URL")
-key = os.environ.get("SUPABASE_KEY")
+# url = os.environ.get("SUPABASE_URL")
+# key = os.environ.get("SUPABASE_KEY")
 
-supabase = create_client(url, key)
-
+# supabase = create_client(url, key)
+# 
 # @app.route('/')
 # @cross_origin()
 # def index():
@@ -41,13 +41,13 @@ def add_researcher():
         return build_cors_preflight_response()
     
     data = request.json
-    response = supabase.table('users').insert({
-        'full_name': data['fullName'],
-        'subject_areas': data['subjectArea'],
-        # 'email': data['email']
-    }).execute()
+    # response = supabase.table('users').insert({
+    #     'full_name': data['fullName'],
+    #     'subject_areas': data['subjectArea'],
+    #     # 'email': data['email']
+    # }).execute()
     
-    return jsonify(response.data), 200
+    return jsonify(data), 200
 
 @app.route('/api/arxiv', methods=['GET'])
 def get_arxiv_papers():

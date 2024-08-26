@@ -191,6 +191,7 @@ def combined_search(index, category, query, papers, keywords=None, weight_bm25=0
     )
 
     print("PINECONE RESULTS: ", pinecone_results)
+    print('DONE')
 
     paper_ids = [paper['id'] for paper in papers]
     combined_results = []
